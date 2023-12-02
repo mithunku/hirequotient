@@ -3,8 +3,7 @@ import { useState } from "react";
 
 import jdata from "./amazondata.json";
 import axiosinstance from "./helpers/AxiosInstance";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
+
 const Admindash = () => {
   const user = jdata.user;
   const [currentPage, setCurrentPage] = useState(1);
