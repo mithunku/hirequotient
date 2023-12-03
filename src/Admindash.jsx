@@ -5,7 +5,7 @@ import jdata from "./amazondata.json";
 import axiosinstance from "./helpers/AxiosInstance";
 
 const Admindash = () => {
-  const user = jdata.user;
+  const [user, setUser] = useState(jdata.user);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
   const lastIndex = currentPage * recordsPerPage;
@@ -15,10 +15,13 @@ const Admindash = () => {
   const numbers = [...Array(npage + 1).keys()].slice(1);
   const [searchname, setsearchname] = useState("");
   const [data, setData] = useState(records);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   // Function to handle delete
   const handleDelete = (id) => {
     axiosinstance.delete(`/user/${id}`);
+    alert("deleted");
+    window.location.assign("/");
   };
   const Nextpage = () => {
     if (currentPage !== npage) {
@@ -38,20 +41,50 @@ const Admindash = () => {
     let name = newname;
     let payload = { name, role, email };
     let resp = axiosinstance.put(`/user/${id}`, payload);
+    window.location.assign("/");
   };
   const handleRole = (id, newrole, email, name) => {
     let role = newrole;
     let payload = { role, name, email };
     let resp = axiosinstance.put(`/user/${id}`, payload);
+    window.location.assign("/");
   };
   const handleEmail = (id, newemail, name, role) => {
     let email = newemail;
     let payload = { email, name, role };
     let resp = axiosinstance.put(`/user/${id}`, payload);
+    window.location.assign("/");
+  };
+  const handleCheckboxChange = (id) => {
+    const updatedSelectedRows = [...selectedRows];
+    const index = updatedSelectedRows.indexOf(id);
+
+    if (index === -1) {
+      updatedSelectedRows.push(id);
+    } else {
+      updatedSelectedRows.splice(index, 1);
+    }
+
+    setSelectedRows(updatedSelectedRows);
+    const tableRow = document.getElementById(`row-${id}`);
+
+    console.log(tableRow);
+    if (tableRow) {
+      tableRow.classList.toggle(
+        "table-danger",
+        updatedSelectedRows.includes(id)
+      );
+    }
+  };
+  const handleDeleteAll = () => {
+    selectedRows.map((x) => {
+      axiosinstance.delete(`/user/${x}`);
+      window.location.assign("/");
+    });
   };
 
   return (
-    <div className="container">
+    <div className="container shadow p-3 mb-5 bg-body-tertiary rounded">
       <h1>Admin Dashboard</h1>
       <div>
         <input
@@ -62,9 +95,17 @@ const Admindash = () => {
           onChange={(e) => {
             setsearchname(e.target.value);
           }}
+          className="form-control me-2 search"
         />
       </div>
       <table cellSpacing={0} id="myTable" className="table table-hover">
+        <thead>
+          <th></th>
+          <th>Id</th>
+          <th>name</th>
+          <th>email</th>
+          <th>role</th>
+        </thead>
         <tbody>
           {records
             .filter((item) => {
@@ -75,9 +116,20 @@ const Admindash = () => {
 
               return (
                 <>
-                  <tr>
-                    <td className="item">
-                      <input type="checkbox" />
+                  <tr
+                    className={
+                      selectedRows.includes(x.id) ? "table-danger item" : "item"
+                    }
+                    id={`row-${x.id}`}
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        onChange={() => handleCheckboxChange(x.id)}
+                        checked={selectedRows.includes(x.id)}
+                        id={`check-${x.id}`}
+                        name="selected"
+                      />
                     </td>
                     <td className="item">{x.id}</td>
                     <td className="item">{x.name}</td>
@@ -88,6 +140,7 @@ const Admindash = () => {
                         onClick={() => {
                           handleDelete(x.id);
                         }}
+                        className="btn btn-danger"
                       >
                         delete
                       </button>
@@ -117,6 +170,7 @@ const Admindash = () => {
                             }
                           }
                         }}
+                        className="btn btn-success"
                       >
                         edit
                       </button>
@@ -159,6 +213,12 @@ const Admindash = () => {
               Next
             </a>
           </li>
+          <button
+            onClick={handleDeleteAll}
+            className="btn btn-danger deleteall"
+          >
+            deleteAll
+          </button>
         </ul>
       </nav>
     </div>
