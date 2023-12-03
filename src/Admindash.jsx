@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 
 import jdata from "./amazondata.json";
-import axiosinstance from "./helpers/AxiosInstance";
 
 const Admindash = () => {
   const [user, setUser] = useState(jdata.user);
@@ -19,9 +18,8 @@ const Admindash = () => {
 
   // Function to handle delete
   const handleDelete = (id) => {
-    axiosinstance.delete(`/user/${id}`);
-    alert("deleted");
-    window.location.assign("/");
+    setUser((prevUsers) => prevUsers.filter((user) => user.id !== id));
+    alert("Deleted");
   };
   const Nextpage = () => {
     if (currentPage !== npage) {
@@ -37,23 +35,29 @@ const Admindash = () => {
     setCurrentPage(id);
   };
 
-  const handlename = (id, newname, role, email) => {
-    let name = newname;
-    let payload = { name, role, email };
-    let resp = axiosinstance.put(`/user/${id}`, payload);
-    window.location.assign("/");
+  const handlename = (id, newname) => {
+    setUser((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === id ? { ...user, name: newname } : user
+      )
+    );
+    alert("Name updated");
   };
-  const handleRole = (id, newrole, email, name) => {
-    let role = newrole;
-    let payload = { role, name, email };
-    let resp = axiosinstance.put(`/user/${id}`, payload);
-    window.location.assign("/");
+  const handleRole = (id, newrole) => {
+    setUser((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === id ? { ...user, role: newrole } : user
+      )
+    );
+    alert("Role updated");
   };
-  const handleEmail = (id, newemail, name, role) => {
-    let email = newemail;
-    let payload = { email, name, role };
-    let resp = axiosinstance.put(`/user/${id}`, payload);
-    window.location.assign("/");
+  const handleEmail = (id, newemail) => {
+    setUser((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === id ? { ...user, email: newemail } : user
+      )
+    );
+    alert("Email updated");
   };
   const handleCheckboxChange = (id) => {
     const updatedSelectedRows = [...selectedRows];
@@ -77,10 +81,10 @@ const Admindash = () => {
     }
   };
   const handleDeleteAll = () => {
-    selectedRows.map((x) => {
-      axiosinstance.delete(`/user/${x}`);
-      window.location.assign("/");
-    });
+    setUser((prevUsers) =>
+      prevUsers.filter((user) => !selectedRows.includes(user.id))
+    );
+    alert("Deleted selected users");
   };
 
   return (
@@ -154,19 +158,19 @@ const Admindash = () => {
                           if (key === "role") {
                             const newRole = prompt("Enter new role:");
                             if (newRole !== null) {
-                              handleRole(x.id, newRole, x.email, x.name);
+                              handleRole(x.id, newRole);
                             }
                           }
                           if (key === "name") {
                             const newname = prompt("Enter new name:");
                             if (newname !== null) {
-                              handlename(x.id, newname, x.role, x.email);
+                              handlename(x.id, newname);
                             }
                           }
                           if (key === "email") {
                             const newemail = prompt("Enter new email:");
                             if (newemail !== null) {
-                              handleEmail(x.id, newemail, x.name, x.role);
+                              handleEmail(x.id, newemail);
                             }
                           }
                         }}
